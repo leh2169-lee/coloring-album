@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>보고 색칠하는 월간 성장앨범</title>
+    <style>
+        body {
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+            background-color: #f4f9ff;
+            margin: 0;
+            padding: 15px 20px;
+            min-height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .event-title {
+            color: #2b8a3e;
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 25px;
+            flex: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            align-items: flex-start;
+        }
+
+        /* 왼쪽: 선택 및 조작 패널 */
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .step-container {
+            background: white;
+            padding: 14px 20px;
+            border-radius: 18px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            border-top: 6px solid #74c0fc;
+        }
+
+        h2 {
+            font-size: 19px;
+            margin: 0 0 10px 0;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* 1. 월 & 이름 입력 줄 */
+        .top-inputs {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        select.month-select {
+            font-size: 22px;
+            padding: 8px 15px;
+            border: 3px solid #a5d8ff;
+            border-radius: 12px;
+            font-weight: bold;
+            color: #1971c2;
+            background: #e7f5ff;
+            cursor: pointer;
+            outline: none;
+        }
+        input[type="text"].student-input {
+            font-size: 22px;
+            padding: 8px 10px;
+            flex: 1;
+            border: 3px solid #a5d8ff;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: bold;
+            outline: none;
+        }
+        input[type="text"].student-input:focus {
+            border-color: #228be6;
+        }
+
+        /* 2. 사진 고르기 & 색칠 변환 옵션 */
+        .upload-btn {
+            display: inline-block;
+            background-color: #4dabf7;
+            color: white;
+            padding: 7px 15px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .upload-btn:hover { background-color: #339af0; }
+
+        .photo-thumbnails {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 6px 0;
+            min-height: 90px;
+            align-items: center;
+        }
+        .thumb-img {
+            width: 105px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 4px solid #dee2e6;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .thumb-img.active {
+            border-color: #ff6b6b;
+            transform: scale(1.06);
+            box-shadow: 0 4px 10px rgba(255,107,107,0.4);
+        }
+
+        .coloring-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 2px dashed #eee;
+        }
+        .mode-btn {
+            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 10px;
+            border: 2px solid #ced4da;
+            background: #f8f9fa;
+            cursor: pointer;
+            font-weight: bold;
+            color: #495057;
+        }
+        .mode-btn.active {
+            background: #ff922b;
+            color: white;
+            border-color: #ff922b;
+        }
+        .layout-btn {
+            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 10px;
+            border: 2px solid #845ef7;
+            background: #f3f0ff;
+            color: #5f3dc4;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .slider-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #555;
+            margin-left: auto;
+        }
+
+        /* 3 & 4. 그림+문장 선택 버튼 */
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .word-btn {
+            font-size: 17px;
+            padding: 10px 12px;
+            border: 2px solid #ffe8cc;
+            border-radius: 14px;
+            background-color: #fff4e6;
+            color: #d9480f;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 10px;
+            text-align: left;
+            line-height: 1.3;
+        }
+        .word-btn.group2 {
+            background-color: #ebfbee;
+            border-color: #d3f9d8;
+            color: #2b8a3e;
+        }
+        .emoji-icon {
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+        .word-btn.active {
+            background-color: #ff7043;
+            border-color: #ff7043;
+            color: white;
+            transform: scale(1.02);
+            box-shadow: 0 4px 10px rgba(255, 112, 67, 0.35);
+        }
+        .word-btn.group2.active {
+            background-color: #40c057;
+            border-color: #40c057;
+            box-shadow: 0 4px 10px rgba(64, 192, 87, 0.35);
+        }
+
+        .small-edit-btn {
+            font-size: 14px;
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid #adb5bd;
+            background: white;
+            color: #495057;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .small-edit-btn:hover { background: #f1f3f5; }
+
+        /* 오른쪽: A4 성장앨범 미리보기 영역 */
+        .right-panel {
+            flex: 1.15;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #album-sheet {
+            width: 100%;
+            max-width: 640px;
+            background-color: #ffffff;
+            padding: 22px 25px;
+            border-radius: 18px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+            border: 4px solid #333;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .sheet-header {
+            text-align: center;
+            border-bottom: 3px dashed #555;
+            padding-bottom: 10px;
+        }
+        .sheet-title {
+            font-size: 28px;
+            font-weight: 900;
+            color: #222;
+            margin: 0;
+        }
+        .sheet-subtitle {
+            font-size: 16px;
+            color: #555;
+            margin: 5px 0 0 0;
+            font-weight: bold;
+        }
+
+        /* 👀 보고 색칠하기: 왼쪽(원본 컬러) + 오른쪽(색칠 도안) 나란히 배치 */
+        .coloring-compare-area {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            height: 290px;
+        }
+        .photo-box {
+            flex: 1;
+            border: 3px solid #333;
+            border-radius: 15px;
+            background-color: #fafafa;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .photo-box.sketch-box {
+            flex: 1.15; /* 색칠할 도안 쪽을 살짝 더 넓게 */
+            border: 3px dashed #ff6b6b;
+        }
+        .box-label {
+            background: #e9ecef;
+            color: #333;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 6px;
+            text-align: center;
+            border-bottom: 2px solid #ccc;
+        }
+        .sketch-box .box-label {
+            background: #fff0f0;
+            color: #e03131;
+            border-bottom: 2px dashed #ffa8a8;
+        }
+        .box-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #fff;
+            padding: 6px;
+        }
+        #reference-img, #coloring-canvas {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+        .canvas-placeholder {
+            color: #bbb;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.5;
+            padding: 10px;
+        }
+
+        /* 덧쓰기 줄공책 영역 (마음편지 스타일 계승) */
+        #tracing-paper {
+            width: 100%;
+            min-height: 240px;
+            background-color: #fffde7;
+            background-image: repeating-linear-gradient(transparent, transparent 59px, #cfcfcf 59px, #cfcfcf 60px);
+            padding: 0 20px;
+            border-radius: 12px;
+            line-height: 60px;
+            font-size: 26px;
+            text-align: left;
+            box-sizing: border-box;
+            border: 2px solid #ffe082;
+            color: #b5b5b5; /* 연필로 덧쓰기 좋은 뚜렷한 연회색 */
+            font-weight: 800;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .trace-placeholder {
+            color: #ccc;
+            font-size: 21px;
+            text-align: center;
+            line-height: 1.6;
+            margin: auto 0;
+        }
+
+        .signature-line {
+            text-align: right;
+            font-size: 26px;
+            color: #b5b5b5;
+        }
+
+        #print-btn {
+            font-size: 24px;
+            padding: 14px 30px;
+            margin-top: 15px;
+            width: 100%;
+            max-width: 640px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+            transition: 0.2s;
+        }
+        #print-btn:hover {
+            background-color: #388E3C;
+            transform: scale(1.02);
+        }
+
+        /* 🖨️ 인쇄 설정 (A4 한 장에 [원본+색칠도안] + [덧쓰기 공책]이 깔끔하게 출력) */
+        @media print {
+            @page { size: A4 portrait; margin: 10mm; }
+            body { background-color: white; padding: 0; margin: 0; height: auto; overflow: visible; }
+            .header, .left-panel, #print-btn { display: none !important; }
+            .main-container { display: block; width: 100%; max-width: 100%; margin: 0; }
+            .right-panel { width: 100%; display: block; }
+            
+            #album-sheet {
+                box-shadow: none;
+                border: 4px solid #222;
+                margin: 0 auto;
+                width: 100%;
+                max-width: 100%;
+                height: 275mm;
+                padding: 20px 22px;
+                justify-content: space-between;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .sheet-title { font-size: 32px; }
+            .sheet-subtitle { font-size: 18px; }
+            .coloring-compare-area {
+                height: 430px; /* 인쇄 시 색칠 공간 넉넉하게 */
+            }
+            .photo-box {
+                border: 3px solid #222;
+            }
+            .photo-box.sketch-box {
+                border: 3px dashed #222;
+            }
+            #tracing-paper {
+                min-height: 240px;
+                font-size: 30px;
+                color: #b8b8b8 !important;
+                border: 2px solid #999;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .signature-line {
+                font-size: 30px;
+                color: #b8b8b8 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1 class="event-title">🎨 사진을 보고 색칠하며 따라 쓰는 월간 성장앨범 ✏️</h1>
+    </div>
+
+    <div class="main-container">
+        <!-- 왼쪽: 단계별 선택 영역 -->
+        <div class="left-panel">
+            
+            <!-- Step 1: 월 선택 & 이름 입력 -->
+            <div class="step-container">
+                <h2>1. 몇 월인가요? 내 이름은?</h2>
+                <div class="top-inputs">
+                    <select id="monthSelect" class="month-select" onchange="updateSheet()">
+                        <option value="3월">🌸 3월</option>
+                        <option value="4월">🌱 4월</option>
+                        <option value="5월">☀️ 5월</option>
+                        <option value="6월">🌿 6월</option>
+                        <option value="7월">🏖️ 7월</option>
+                        <option value="8월">🌻 8월</option>
+                        <option value="9월">🌾 9월</option>
+                        <option value="10월" selected>🍁 10월</option>
+                        <option value="11월">🍂 11월</option>
+                        <option value="12월">⛄ 12월</option>
+                        <option value="1월">🌅 1월</option>
+                        <option value="2월">🎓 2월</option>
+                    </select>
+                    <input type="text" id="studentName" class="student-input" placeholder="학생 이름 입력" oninput="updateSheet()">
+                </div>
+            </div>
+
+            <!-- Step 2: 이달의 사진 1장 고르기 & 색칠 도안 변환 -->
+            <div class="step-container">
+                <h2>
+                    <span>2. 이번 달 사진 1장을 골라보세요!</span>
+                    <label for="photoInput" class="upload-btn">📁 사진 여러 장 불러오기</label>
+                    <input type="file" id="photoInput" multiple accept="image/*" style="display:none;" onchange="loadPhotos(event)">
+                </h2>
+                
+                <div class="photo-thumbnails" id="thumbContainer">
+                    <span style="color:#999; font-size:16px;">위의 파란 버튼을 눌러 이번 달 활동 사진들을 불러오세요.</span>
+                </div>
+
+                <div class="coloring-controls">
+                    <button class="mode-btn active" onclick="setColorMode('sketch', this)">✏️ 윤곽선 도안</button>
+                    <button class="mode-btn" onclick="setColorMode('faint', this)">🌫️ 연한 흑백(덧칠용)</button>
+                    <button class="layout-btn" id="toggleRefBtn" onclick="toggleReferenceBox()">👀 원래 사진 숨기기(도안만 크게)</button>
+                    
+                    <div class="slider-wrap" id="sliderWrap">
+                        <span>선 진하기:</span>
+                        <input type="range" id="edgeSlider" min="10" max="80" value="38" oninput="applyImageFilter()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: 어떤 활동이었나요? -->
+            <div class="step-container">
+                <h2>
+                    <span>3. 무엇을 했나요? (누르면 읽어줘요 🔊)</span>
+                    <button class="small-edit-btn" onclick="customPhrase(1)">✏️ 문장 직접 입력</button>
+                </h2>
+                <div class="btn-grid">
+                    <button class="word-btn group1" onclick="selectPhrase(1, '⛰️ 친구들과 신나게 체험학습을 다녀왔어요.', this)">
+                        <span class="emoji-icon">⛰️</span> 신나게 체험학습을 갔어요
+                    </button>
+                    <button class="word-btn group1" onclick="selectPhrase(1, '🎨 교실에서 재미있게 만들고 공부했어요.', this)">
+                        <span class="emoji-icon">🎨</span> 재미있게 만들고 공부했어요
+                    </button>
+                    <button class="word-btn group1" onclick="selectPhrase(1, '🍎 맛있는 것도 먹고 즐거운 시간을 보냈어요.', this)">
+                        <span class="emoji-icon">🍎</span> 맛있는 것도 먹고 즐거웠어요
+                    </button>
+                    <button class="word-btn group1" onclick="selectPhrase(1, '👫 친구들과 사이좋게 몸을 움직이며 놀았어요.', this)">
+                        <span class="emoji-icon">👫</span> 친구들과 사이좋게 놀았어요
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4: 내 기분과 다짐은? -->
+            <div class="step-container">
+                <h2>
+                    <span>4. 어떤 기분이 들었나요? (🔊)</span>
+                    <button class="small-edit-btn" onclick="customPhrase(2)">✏️ 문장 직접 입력</button>
+                </h2>
+                <div class="btn-grid">
+                    <button class="word-btn group2" onclick="selectPhrase(2, '😄 정말 신나고 웃음이 가득했어요!', this)">
+                        <span class="emoji-icon">😄</span> 정말 신나고 즐거웠어요!
+                    </button>
+                    <button class="word-btn group2" onclick="selectPhrase(2, '👍 나 스스로 멋지게 해내서 뿌듯했어요!', this)">
+                        <span class="emoji-icon">👍</span> 스스로 해내서 뿌듯했어요!
+                    </button>
+                    <button class="word-btn group2" onclick="selectPhrase(2, '🥰 마음이 따뜻하고 행복했어요!', this)">
+                        <span class="emoji-icon">🥰</span> 마음이 따뜻하고 행복했어요!
+                    </button>
+                    <button class="word-btn group2" onclick="selectPhrase(2, '💪 다음 달에도 씩씩하게 참여할 거예요!', this)">
+                        <span class="emoji-icon">💪</span> 다음에도 씩씩하게 할래요!
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 오른쪽: 실시간 색칠 & 덧쓰기 앨범 미리보기 -->
+        <div class="right-panel">
+            <div id="album-sheet">
+                <div class="sheet-header">
+                    <h1 class="sheet-title" id="sheetTitle">🍁 10월의 빛나는 성장앨범</h1>
+                    <p class="sheet-subtitle">왼쪽 사진을 보고 오른쪽 그림을 예쁘게 색칠한 뒤, 아래 글을 따라 써 보세요.</p>
+                </div>
+
+                <!-- 👀 보고 색칠하기 영역: 왼쪽(원본 컬러) + 오른쪽(색칠 도안) -->
+                <div class="coloring-compare-area">
+                    <!-- 왼쪽: 보고 색칠할 원본 컬러 사진 -->
+                    <div class="photo-box" id="refBox">
+                        <div class="box-label">👀 보고 색칠해요 (원래 사진)</div>
+                        <div class="box-content">
+                            <div id="refPlaceholder" class="canvas-placeholder">사진을 고르면<br>원래 사진이 나와요</div>
+                            <img id="reference-img" alt="원래 사진">
+                        </div>
+                    </div>
+
+                    <!-- 오른쪽: 아이가 직접 색칠할 도안 -->
+                    <div class="photo-box sketch-box">
+                        <div class="box-label">🎨 여기에 색칠해요 (색칠 도안)</div>
+                        <div class="box-content">
+                            <div id="canvasPlaceholder" class="canvas-placeholder">사진을 고르면<br>색칠 도안이 나와요</div>
+                            <canvas id="coloring-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 덧쓰기 줄공책 영역 -->
+                <div id="tracing-paper">
+                    <div id="final-text" class="trace-placeholder">
+                        왼쪽에서 그림 버튼을 순서대로 고르면<br>여기에 따라 쓰기 글씨가 나타납니다 ✏️
+                    </div>
+                </div>
+            </div>
+
+            <button id="print-btn" onclick="checkAndPrint()">🖨️ 보고 색칠하는 성장앨범 인쇄하기</button>
+        </div>
+    </div>
+
+    <script>
+        let currentImageObj = null;
+        let colorMode = 'sketch'; // 'sketch'(윤곽선), 'faint'(연한흑백)
+        let showRefPhoto = true;  // 원본 사진 나란히 보기 여부
+        let phrase1 = "";
+        let phrase2 = "";
+
+        // 음성 읽어주기(TTS)
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const cleanText = text.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+            const utter = new SpeechSynthesisUtterance(cleanText);
+            utter.lang = 'ko-KR';
+            utter.rate = 0.95;
+            window.speechSynthesis.speak(utter);
+        }
+
+        // 사진 여러 장 불러오기
+        function loadPhotos(event) {
+            const files = Array.from(event.target.files).filter(f => f.type.startsWith('image/'));
+            if (files.length === 0) return;
+
+            const container = document.getElementById('thumbContainer');
+            container.innerHTML = '';
+
+            files.forEach((file, index) => {
+                const url = URL.createObjectURL(file);
+                const img = document.createElement('img');
+                img.src = url;
+                img.className = 'thumb-img';
+                img.onclick = () => selectPhotoForColoring(url, img);
+                container.appendChild(img);
+
+                if (index === 0) {
+                    selectPhotoForColoring(url, img);
+                }
+            });
+        }
+
+        // 선택한 사진을 원본 이미지와 캔버스에 동시에 표시
+        function selectPhotoForColoring(url, thumbElem) {
+            document.querySelectorAll('.thumb-img').forEach(el => el.classList.remove('active'));
+            if (thumbElem) thumbElem.classList.add('active');
+
+            // 1. 왼쪽 원본 컬러 사진 표시
+            const refImg = document.getElementById('reference-img');
+            refImg.src = url;
+            refImg.style.display = 'block';
+            document.getElementById('refPlaceholder').style.display = 'none';
+
+            // 2. 오른쪽 색칠 도안 캔버스 변환
+            const img = new Image();
+            img.onload = function() {
+                currentImageObj = img;
+                document.getElementById('canvasPlaceholder').style.display = 'none';
+                const canvas = document.getElementById('coloring-canvas');
+                canvas.style.display = 'block';
+                applyImageFilter();
+            };
+            img.src = url;
+        }
+
+        // 원래 사진 숨기기/보이기 토글 (전자칠판 보고 칠할 때 도안만 크게 뽑기 용도)
+        function toggleReferenceBox() {
+            showRefPhoto = !showRefPhoto;
+            const refBox = document.getElementById('refBox');
+            const btn = document.getElementById('toggleRefBtn');
+            if (showRefPhoto) {
+                refBox.style.display = 'flex';
+                btn.innerText = '👀 원래 사진 숨기기(도안만 크게)';
+            } else {
+                refBox.style.display = 'none';
+                btn.innerText = '👀 원래 사진 같이 보기(나란히)';
+            }
+        }
+
+        // 색칠 스타일 모드 변경
+        function setColorMode(mode, btnElem) {
+            colorMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btnElem.classList.add('active');
+            applyImageFilter();
+        }
+
+        // 사진을 컬러링 도안으로 변환하는 알고리즘
+        function applyImageFilter() {
+            if (!currentImageObj) return;
+
+            const canvas = document.getElementById('coloring-canvas');
+            const ctx = canvas.getContext('2d');
+
+            const maxW = 700;
+            const scale = Math.min(1, maxW / currentImageObj.width);
+            const w = Math.floor(currentImageObj.width * scale);
+            const h = Math.floor(currentImageObj.height * scale);
+
+            canvas.width = w;
+            canvas.height = h;
+
+            ctx.drawImage(currentImageObj, 0, 0, w, h);
+
+            const imgData = ctx.getImageData(0, 0, w, h);
+            const data = imgData.data;
+            const sliderVal = parseInt(document.getElementById('edgeSlider').value);
+
+            const gray = new Uint8Array(w * h);
+            for (let i = 0; i < data.length; i += 4) {
+                gray[i >> 2] = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+            }
+
+            if (colorMode === 'faint') {
+                // 연한 흑백 밑그림 모드
+                const fadeFactor = (100 - sliderVal) / 100;
+                for (let i = 0; i < data.length; i += 4) {
+                    const g = gray[i >> 2];
+                    const lightGray = Math.min(255, g + (255 - g) * fadeFactor);
+                    data[i] = data[i + 1] = data[i + 2] = lightGray;
+                }
+                ctx.putImageData(imgData, 0, 0);
+                return;
+            }
+
+            // 윤곽선 도안(Sketch) 모드
+            const outData = ctx.createImageData(w, h);
+            const out = outData.data;
+            const sensitivity = sliderVal / 25; 
+
+            for (let y = 1; y < h - 1; y++) {
+                for (let x = 1; x < w - 1; x++) {
+                    const idx = y * w + x;
+
+                    const gx =
+                        -1 * gray[idx - w - 1] + 1 * gray[idx - w + 1] +
+                        -2 * gray[idx - 1]     + 2 * gray[idx + 1] +
+                        -1 * gray[idx + w - 1] + 1 * gray[idx + w + 1];
+
+                    const gy =
+                        -1 * gray[idx - w - 1] - 2 * gray[idx - w] - 1 * gray[idx - w + 1] +
+                         1 * gray[idx + w - 1] + 2 * gray[idx + w] + 1 * gray[idx + w + 1];
+
+                    let edge = Math.sqrt(gx * gx + gy * gy) * sensitivity;
+                    
+                    let pixelVal = 255 - edge;
+                    if (pixelVal > 225) pixelVal = 255; 
+                    if (pixelVal < 30) pixelVal = 30;
+
+                    const pIdx = idx * 4;
+                    out[pIdx] = out[pIdx + 1] = out[pIdx + 2] = pixelVal;
+                    out[pIdx + 3] = 255;
+                }
+            }
+            ctx.putImageData(outData, 0, 0);
+        }
+
+        function selectPhrase(group, text, btnElement) {
+            const buttons = document.querySelectorAll('.group' + group);
+            buttons.forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+
+            if (group === 1) phrase1 = text;
+            if (group === 2) phrase2 = text;
+
+            speakText(text);
+            updateSheet();
+        }
+
+        function customPhrase(group) {
+            const defaultText = (group === 1) ? phrase1 : phrase2;
+            const input = prompt("학생이 따라 쓸 문장을 직접 입력해주세요!", defaultText || "⛰️ 가을 산행을 신나게 다녀왔어요.");
+            if (input && input.trim() !== "") {
+                const buttons = document.querySelectorAll('.group' + group);
+                buttons.forEach(btn => btn.classList.remove('active'));
+                if (group === 1) phrase1 = input.trim();
+                if (group === 2) phrase2 = input.trim();
+                speakText(input.trim());
+                updateSheet();
+            }
+        }
+
+        function updateSheet() {
+            const monthSelect = document.getElementById('monthSelect');
+            const monthText = monthSelect.options[monthSelect.selectedIndex].text;
+            const studentName = document.getElementById('studentName').value.trim();
+
+            if (studentName) {
+                document.getElementById('sheetTitle').innerText = `${monthText}, ${studentName}의 성장앨범`;
+            } else {
+                document.getElementById('sheetTitle').innerText = `${monthText}의 빛나는 성장앨범`;
+            }
+
+            const finalTextDiv = document.getElementById('final-text');
+
+            if (!phrase1 && !phrase2 && !studentName) {
+                finalTextDiv.innerHTML = "왼쪽에서 그림 버튼을 순서대로 고르면<br>여기에 따라 쓰기 글씨가 나타납니다 ✏️";
+                finalTextDiv.className = "trace-placeholder";
+                return;
+            }
+
+            finalTextDiv.className = "";
+            let html = "<div>";
+            if (phrase1) html += phrase1 + "<br>";
+            if (phrase2) html += phrase2 + "<br>";
+            html += "</div>";
+
+            const nameDisplay = studentName ? studentName : "(내 이름)";
+            html += `<div class="signature-line">- 멋진 <strong>${nameDisplay}</strong> 씀 -</div>`;
+
+            finalTextDiv.innerHTML = html;
+        }
+
+        function checkAndPrint() {
+            if (!currentImageObj) {
+                if (!confirm("아직 사진을 고르지 않았어요! 사진 없이 그대로 인쇄할까요?")) return;
+            }
+            if (!phrase1 && !phrase2) {
+                alert("왼쪽에서 3번이나 4번 마음 문장을 먼저 골라주세요!");
+                return;
+            }
+            window.print();
+        }
+    </script>
+</body>
+</html>
