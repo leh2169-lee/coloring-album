@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>수준별 맞춤형 월간 색칠 성장앨범</title>
+    <title>수준별 현장체험학습 추억앨범 (학생 집중 에디션)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body {
@@ -16,6 +16,13 @@
             display: flex;
             flex-direction: column;
             color: #333;
+            transition: background-color 0.3s;
+        }
+
+        /* 🔒 학생 집중 모드일 때 전체 배경을 차분한 파스텔톤으로 전환 */
+        body.focus-mode {
+            background-color: #edf2ff;
+            padding: 18px 28px;
         }
 
         /* 상단 헤더 & 6명 학생 빠른 전환 바 */
@@ -33,7 +40,7 @@
             gap: 10px;
         }
         .app-title {
-            font-size: 24px;
+            font-size: 23px;
             font-weight: 900;
             color: #1971c2;
             margin: 0;
@@ -48,9 +55,9 @@
             align-items: center;
         }
         .roster-btn {
-            font-size: 17px;
+            font-size: 16px;
             font-weight: bold;
-            padding: 8px 14px;
+            padding: 8px 13px;
             border-radius: 30px;
             border: 3px solid #dee2e6;
             background: #f8f9fa;
@@ -79,9 +86,27 @@
             background: rgba(255,255,255,0.25);
             color: #fff;
         }
+        .top-right-btns {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .focus-toggle-btn {
+            font-size: 16px;
+            padding: 9px 16px;
+            border-radius: 12px;
+            border: 3px solid #7950f2;
+            background: #7950f2;
+            color: white;
+            cursor: pointer;
+            font-weight: 900;
+            box-shadow: 0 4px 10px rgba(121, 80, 242, 0.3);
+            transition: 0.2s;
+        }
+        .focus-toggle-btn:hover { background: #6741d9; }
         .config-btn {
             font-size: 14px;
-            padding: 8px 12px;
+            padding: 9px 12px;
             border-radius: 10px;
             border: 2px solid #adb5bd;
             background: white;
@@ -90,11 +115,31 @@
             color: #495057;
         }
 
+        /* 🔒 학생 집중 모드 전용 상단 미니 컨트롤 바 */
+        .focus-floating-bar {
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            background: #ffffff;
+            padding: 10px 22px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            border: 3px solid #7950f2;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        body.focus-mode .focus-floating-bar {
+            display: flex;
+        }
+        body.focus-mode .top-bar,
+        body.focus-mode .teacher-only-step {
+            display: none !important;
+        }
+
         .main-container {
             display: flex;
-            gap: 22px;
+            gap: 24px;
             flex: 1;
-            max-width: 1420px;
+            max-width: 1440px;
             margin: 0 auto;
             width: 100%;
             align-items: flex-start;
@@ -105,38 +150,57 @@
             flex: 1.05;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 14px;
         }
 
         .step-container {
             background: white;
-            padding: 14px 18px;
-            border-radius: 18px;
+            padding: 16px 20px;
+            border-radius: 20px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            border-top: 5px solid #74c0fc;
+            border-top: 6px solid #74c0fc;
+            transition: all 0.25s;
+        }
+
+        /* 단계별 시각적 강조 (현재 해야 할 단계에 파란/초록 테두리 강조) */
+        .step-container.active-task-1 {
+            border: 4px solid #ff922b;
+            box-shadow: 0 6px 18px rgba(255, 146, 43, 0.2);
+        }
+        .step-container.active-task-2 {
+            border: 4px solid #40c057;
+            box-shadow: 0 6px 18px rgba(64, 192, 87, 0.2);
+        }
+        /* 아직 차례가 아닌 단계는 살짝 접거나 차분하게 처리 */
+        .step-container.waiting-step {
+            opacity: 0.45;
+            transform: scale(0.98);
         }
 
         h2 {
-            font-size: 18px;
-            margin: 0 0 10px 0;
-            color: #333;
+            font-size: 19px;
+            margin: 0 0 12px 0;
+            color: #222;
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
             gap: 6px;
         }
+        body.focus-mode h2 {
+            font-size: 24px;
+            margin-bottom: 14px;
+        }
 
-        /* 1. 월 & 이름 & 수준 선택 줄 */
         .top-inputs {
             display: flex;
             gap: 8px;
             align-items: center;
             flex-wrap: wrap;
         }
-        select.month-select {
-            font-size: 20px;
-            padding: 8px 12px;
+        select.trip-select {
+            font-size: 18px;
+            padding: 8px 10px;
             border: 3px solid #a5d8ff;
             border-radius: 12px;
             font-weight: bold;
@@ -144,10 +208,20 @@
             background: #e7f5ff;
             cursor: pointer;
         }
-        input[type="text"].student-input {
-            font-size: 20px;
+        input[type="text"].place-input {
+            font-size: 17px;
             padding: 8px 10px;
-            width: 140px;
+            width: 155px;
+            border: 3px solid #ffd8a8;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: bold;
+            background: #fff9db;
+        }
+        input[type="text"].student-input {
+            font-size: 18px;
+            padding: 8px 10px;
+            width: 110px;
             border: 3px solid #a5d8ff;
             border-radius: 12px;
             text-align: center;
@@ -156,7 +230,8 @@
         .level-tabs {
             display: flex;
             gap: 6px;
-            flex: 1;
+            width: 100%;
+            margin-top: 6px;
         }
         .lvl-tab {
             flex: 1;
@@ -174,7 +249,7 @@
         .lvl-tab.active.lvl-2 { background: #2b8a3e; color: white; border-color: #2b8a3e; }
         .lvl-tab.active.lvl-3 { background: #e67700; color: white; border-color: #e67700; }
 
-        /* 2. 사진 고르기 & 색칠 변환 옵션 */
+        /* 2. 사진 고르기 & 고완성도 색칠 변환 옵션 */
         .upload-btn {
             display: inline-block;
             background-color: #4dabf7;
@@ -220,7 +295,7 @@
         }
         .mode-btn {
             font-size: 14px;
-            padding: 6px 10px;
+            padding: 7px 11px;
             border-radius: 8px;
             border: 2px solid #ced4da;
             background: #f8f9fa;
@@ -231,11 +306,25 @@
         .mode-btn.active {
             background: #ff922b;
             color: white;
-            border-color: #ff922b;
+            border-color: #f76707;
+        }
+        .frame-toggle-btn {
+            font-size: 14px;
+            padding: 7px 11px;
+            border-radius: 8px;
+            border: 2px solid #f06595;
+            background: #fff0f6;
+            color: #c2255c;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .frame-toggle-btn.active {
+            background: #e64980;
+            color: white;
         }
         .layout-btn {
             font-size: 14px;
-            padding: 6px 10px;
+            padding: 7px 11px;
             border-radius: 8px;
             border: 2px solid #845ef7;
             background: #f3f0ff;
@@ -250,94 +339,115 @@
             font-size: 13px;
             font-weight: bold;
             color: #555;
-            margin-left: auto;
+            width: 100%;
+            margin-top: 4px;
+            justify-content: flex-end;
         }
 
-        /* 3 & 4. 그림+문장 선택 버튼 */
+        /* 3 & 4. 그림+문장 선택 버튼 (자폐성 장애 학생 시인성 강화) */
         .btn-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            gap: 12px;
         }
         .word-btn {
-            font-size: 17px;
-            padding: 10px 12px;
-            border: 2px solid #ffe8cc;
-            border-radius: 14px;
-            background-color: #fff4e6;
+            font-size: 18px;
+            padding: 14px 16px;
+            border: 3px solid #ffd8a8;
+            border-radius: 16px;
+            background-color: #fff9db;
             color: #d9480f;
             cursor: pointer;
             transition: all 0.2s;
-            font-weight: bold;
+            font-weight: 800;
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            gap: 10px;
+            gap: 12px;
             text-align: left;
-            line-height: 1.25;
+            line-height: 1.3;
         }
         .word-btn.group2 {
             background-color: #ebfbee;
-            border-color: #d3f9d8;
+            border-color: #b2f2bb;
             color: #2b8a3e;
         }
         .emoji-icon {
-            font-size: 28px;
+            font-size: 34px;
             flex-shrink: 0;
-        }
-        /* 3수준일 때 버튼과 이모지를 훨씬 더 크게 확대 */
-        body.mode-lvl-3 .word-btn {
-            font-size: 21px;
-            padding: 14px;
+            background: white;
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
             justify-content: center;
-        }
-        body.mode-lvl-3 .emoji-icon {
-            font-size: 42px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
         }
 
+        /* 🥉 3수준일 때 버튼 크기 1.5배 확대 & 2x2 핵심 4개 배치 */
+        body.mode-lvl-3 .word-btn {
+            font-size: 25px;
+            padding: 20px 18px;
+            justify-content: center;
+            border-width: 4px;
+        }
+        body.mode-lvl-3 .emoji-icon {
+            font-size: 48px;
+            width: 68px;
+            height: 68px;
+        }
+
+        /* ⭐ 선택 완료 시: 선택된 버튼은 선명하게 확대, 선택 안 된 나머지 버튼은 흐리게(Dim) 처리하여 시각적 주의 집중 유도 */
+        .btn-grid.has-selection .word-btn:not(.active) {
+            opacity: 0.38;
+            filter: grayscale(40%);
+            transform: scale(0.97);
+        }
         .word-btn.active {
-            background-color: #ff7043;
-            border-color: #ff7043;
+            background-color: #ff6b6b;
+            border-color: #c92a2a;
             color: white;
-            transform: scale(1.02);
-            box-shadow: 0 4px 10px rgba(255, 112, 67, 0.35);
+            transform: scale(1.03);
+            box-shadow: 0 6px 14px rgba(255, 107, 107, 0.45);
         }
         .word-btn.group2.active {
-            background-color: #40c057;
-            border-color: #40c057;
-            box-shadow: 0 4px 10px rgba(64, 192, 87, 0.35);
+            background-color: #37b24d;
+            border-color: #2b8a3e;
+            color: white;
+            box-shadow: 0 6px 14px rgba(55, 178, 77, 0.45);
         }
 
         /* 🥇 1수준 전용: 직접 타이핑 입력창 */
         #lvl1-typing-box {
-            margin-top: 10px;
-            padding-top: 10px;
+            margin-top: 12px;
+            padding-top: 12px;
             border-top: 2px dashed #d0ebff;
             display: none;
         }
         .lvl1-input {
             width: 96%;
-            font-size: 18px;
-            padding: 10px;
+            font-size: 19px;
+            padding: 12px;
             border: 3px solid #74c0fc;
-            border-radius: 10px;
+            border-radius: 12px;
             font-weight: bold;
             outline: none;
         }
 
-        /* 🥈 2수준 전용: 어절(단어 덩어리) 단위로 터치하며 따라 말하기 박스 */
+        /* 🥈 2수준 전용: 어절 단위 말풍선 */
         #lvl2-eojeol-box {
             background: #fff9db;
-            border: 3px solid #fcc419;
-            border-radius: 16px;
-            padding: 14px 18px;
+            border: 4px solid #fcc419;
+            border-radius: 18px;
+            padding: 16px 20px;
             display: none;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
         }
         .eojeol-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 900;
             color: #d9480f;
             margin: 0;
@@ -350,10 +460,9 @@
             align-items: center;
             width: 100%;
         }
-        /* 어절 단위 큼직한 말풍선 버튼 */
         .eojeol-chip {
-            padding: 12px 22px;
-            font-size: 26px;
+            padding: 12px 20px;
+            font-size: 25px;
             font-weight: 900;
             border-radius: 25px;
             border: 4px solid #fab005;
@@ -379,18 +488,17 @@
             font-weight: bold;
         }
         .speak-all-btn {
-            font-size: 17px;
+            font-size: 18px;
             font-weight: bold;
-            padding: 8px 20px;
-            border-radius: 20px;
+            padding: 10px 24px;
+            border-radius: 24px;
             border: none;
             background: #fd7e14;
             color: white;
             cursor: pointer;
-            box-shadow: 0 3px 6px rgba(253, 126, 20, 0.3);
         }
 
-        /* 오른쪽: A4 성장앨범 미리보기 영역 */
+        /* 오른쪽: A4 체험학습 활동지 미리보기 영역 */
         .right-panel {
             flex: 1.15;
             display: flex;
@@ -410,15 +518,24 @@
             display: flex;
             flex-direction: column;
             gap: 14px;
+            transition: background 0.2s;
+        }
+        /* ⭐ 여백 색칠 무늬 액자 모드 (화면에서는 시각적 노이즈를 줄이기 위해 기본 OFF, 인쇄 시 또는 버튼 클릭 시 ON) */
+        #album-sheet.with-pattern-frame {
+            padding: 26px 28px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cpath d='M22 12 L27 24 L40 24 L30 32 L34 44 L22 36 L10 44 L14 32 L4 24 L17 24 Z' stroke='%23888' stroke-width='2' fill='none'/%3E%3Cpath d='M68 52 A 9 9 0 0 1 86 52 C 86 65 68 78 68 78 C 68 78 50 65 50 52 A 9 9 0 0 1 68 52 Z' stroke='%23888' stroke-width='2' fill='none'/%3E%3Ccircle cx='25' cy='72' r='9' stroke='%23888' stroke-width='2' fill='none'/%3E%3C/svg%3E");
         }
 
         .sheet-header {
             text-align: center;
             border-bottom: 3px dashed #555;
-            padding-bottom: 8px;
+            padding: 10px;
+            background: rgba(255,255,255,0.96);
+            border-radius: 12px;
+            border: 3px solid #333;
         }
         .sheet-title {
-            font-size: 27px;
+            font-size: 26px;
             font-weight: 900;
             color: #222;
             margin: 0;
@@ -435,20 +552,20 @@
             display: flex;
             gap: 14px;
             width: 100%;
-            height: 280px;
+            height: 285px;
         }
         .photo-box {
             flex: 1;
             border: 3px solid #333;
             border-radius: 14px;
-            background-color: #fafafa;
+            background-color: #ffffff;
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
         .photo-box.sketch-box {
-            flex: 1.15;
-            border: 3px dashed #ff6b6b;
+            flex: 1.25;
+            border: 4px solid #333;
         }
         .box-label {
             background: #e9ecef;
@@ -490,50 +607,49 @@
         /* ✏️ 1수준 & 2수준용: 덧쓰기 줄공책 영역 */
         #tracing-paper {
             width: 100%;
-            min-height: 240px;
+            min-height: 235px;
             background-color: #fffde7;
             background-image: repeating-linear-gradient(transparent, transparent 59px, #cfcfcf 59px, #cfcfcf 60px);
             padding: 0 20px;
             border-radius: 12px;
             line-height: 60px;
-            font-size: 26px;
+            font-size: 25px;
             text-align: left;
             box-sizing: border-box;
-            border: 2px solid #ffe082;
+            border: 3px solid #333;
             color: #b5b5b5;
             font-weight: 800;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
         }
-        /* 2수준일 때는 어절 따라 쓰기 좋게 줄 간격 76px, 글씨 34px로 큼직하게 */
         #tracing-paper.lvl2-paper {
             background-image: repeating-linear-gradient(transparent, transparent 75px, #cfcfcf 75px, #cfcfcf 76px);
             line-height: 76px;
-            font-size: 33px;
+            font-size: 31px;
             text-align: center;
         }
         .signature-line {
             text-align: right;
-            font-size: 26px;
+            font-size: 25px;
             color: #b5b5b5;
         }
         #tracing-paper.lvl2-paper .signature-line {
-            font-size: 32px;
+            font-size: 30px;
         }
 
-        /* 🎨 3수준 전용 학습지 하단: 대형 감정 그림 스티커 + 초특대 이름 색칠/따라 쓰기 */
+        /* 🎨 3수준 전용 학습지 하단 */
         #lvl3-sheet-area {
             display: none;
             flex-direction: column;
             gap: 12px;
             width: 100%;
-            min-height: 240px;
+            min-height: 235px;
         }
         .lvl3-sticker-row {
             display: flex;
             gap: 14px;
-            height: 125px;
+            height: 120px;
         }
         .lvl3-sticker-card {
             flex: 1;
@@ -547,7 +663,7 @@
             padding: 10px;
         }
         .lvl3-big-emoji {
-            font-size: 64px;
+            font-size: 62px;
             line-height: 1;
         }
         .lvl3-card-label {
@@ -582,7 +698,6 @@
             text-stroke: 3px #888888;
         }
 
-        /* 하단 저장 및 인쇄 버튼 */
         .action-btns {
             display: flex;
             gap: 12px;
@@ -604,7 +719,6 @@
         .btn-save-img { background-color: #228be6; }
         .btn-print-sheet { background-color: #4CAF50; }
 
-        /* 모달: 우리 반 6명 학생 이름 및 수준 설정 */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -645,11 +759,10 @@
             font-weight: bold;
         }
 
-        /* 🖨️ 인쇄 설정 */
         @media print {
             @page { size: A4 portrait; margin: 10mm; }
             body { background-color: white; padding: 0; margin: 0; }
-            .top-bar, .left-panel, .action-btns, .modal-overlay { display: none !important; }
+            .top-bar, .focus-floating-bar, .left-panel, .action-btns, .modal-overlay { display: none !important; }
             .main-container { display: block; width: 100%; max-width: 100%; margin: 0; }
             .right-panel { width: 100%; display: block; }
             
@@ -660,18 +773,20 @@
                 width: 100%;
                 max-width: 100%;
                 height: 275mm;
-                padding: 20px 22px;
+                padding: 24px 26px;
                 justify-content: space-between;
+                /* 인쇄할 때는 별·하트 색칠 테두리가 자동으로 들어가 완성도를 높임 */
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cpath d='M22 12 L27 24 L40 24 L30 32 L34 44 L22 36 L10 44 L14 32 L4 24 L17 24 Z' stroke='%23888' stroke-width='2' fill='none'/%3E%3Cpath d='M68 52 A 9 9 0 0 1 86 52 C 86 65 68 78 68 78 C 68 78 50 65 50 52 A 9 9 0 0 1 68 52 Z' stroke='%23888' stroke-width='2' fill='none'/%3E%3Ccircle cx='25' cy='72' r='9' stroke='%23888' stroke-width='2' fill='none'/%3E%3C/svg%3E") !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
-            .sheet-title { font-size: 32px; }
+            .sheet-title { font-size: 30px; }
             .coloring-compare-area { height: 420px; }
             .photo-box { border: 3px solid #222; }
-            .photo-box.sketch-box { border: 3px dashed #222; }
+            .photo-box.sketch-box { border: 4px solid #222; }
             #tracing-paper {
                 color: #b8b8b8 !important;
-                border: 2px solid #999;
+                border: 3px solid #222;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
@@ -684,100 +799,111 @@
 </head>
 <body class="mode-lvl-1">
 
-    <!-- 상단: 우리 반 6명 빠른 전환 바 -->
+    <!-- 🔒 학생 집중 모드일 때만 나타나는 깔끔한 상단 안내 바 -->
+    <div class="focus-floating-bar">
+        <div style="font-size: 22px; font-weight: 900; color: #5f3dc4;">
+            ✨ <span id="focusStudentName">학생</span>의 체험학습 추억 만들기
+            <span style="font-size: 15px; color: #666; font-weight: bold; margin-left: 10px;">(학생 전환: Alt+1~6 / 교사 설정 복귀: Alt+F)</span>
+        </div>
+        <button class="focus-toggle-btn" style="background:#495057; border-color:#343a40;" onclick="toggleFocusMode()">🔓 교사 설정 화면으로</button>
+    </div>
+
+    <!-- 상단: 우리 반 6명 빠른 전환 바 (교사 설정 모드) -->
     <div class="top-bar">
         <div class="app-title">
-            🎨 수준별 월간 성장앨범
-            <span style="font-size:14px; color:#666; font-weight:normal;">(단축키: Alt + 숫자 1~6)</span>
+            🚌 현장체험학습 추억앨범
+            <span style="font-size:13px; color:#666; font-weight:normal;">(Alt+1~6: 학생 전환 / Alt+F: 집중모드)</span>
         </div>
         <div class="student-roster" id="rosterBar"></div>
-        <button class="config-btn" onclick="openRosterModal()">⚙️ 6명 명단·수준 설정</button>
+        <div class="top-right-btns">
+            <button class="focus-toggle-btn" onclick="toggleFocusMode()">🔒 학생 집중 모드 켜기 (Alt+F)</button>
+            <button class="config-btn" onclick="openRosterModal()">⚙️ 6명 명단 설정</button>
+        </div>
     </div>
 
     <div class="main-container">
         <!-- 왼쪽: 수준별 맞춤형 조작 패널 -->
         <div class="left-panel">
             
-            <!-- Step 1: 월 & 학생 이름 & 1·2·3수준 선택 -->
-            <div class="step-container">
+            <!-- 교사 설정 전용 Step 1 -->
+            <div class="step-container teacher-only-step">
                 <h2>
-                    <span>1. 월 선택 & 학생 수준 전환</span>
+                    <span>1. 체험학습 주제 & 학생 수준 전환</span>
                     <span id="levelDescText" style="font-size:14px; color:#1971c2;">🥇 1수준: 문장 따라 쓰기 및 직접 타이핑</span>
                 </h2>
                 <div class="top-inputs">
-                    <select id="monthSelect" class="month-select" onchange="updateSheet()">
-                        <option value="3월">🌸 3월</option>
-                        <option value="4월">🌱 4월</option>
-                        <option value="5월">☀️ 5월</option>
-                        <option value="6월">🌿 6월</option>
-                        <option value="7월">🏖️ 7월</option>
-                        <option value="8월">🌻 8월</option>
-                        <option value="9월">🌾 9월</option>
-                        <option value="10월" selected>🍁 10월</option>
-                        <option value="11월">🍂 11월</option>
-                        <option value="12월">⛄ 12월</option>
-                        <option value="1월">🌅 1월</option>
-                        <option value="2월">🎓 2월</option>
+                    <select id="tripSelect" class="trip-select" onchange="updateSheet()">
+                        <option value="가을 현장체험학습" selected>🍁 가을 현장체험학습</option>
+                        <option value="봄 현장체험학습">🌸 봄 현장체험학습</option>
+                        <option value="공원·식물원 나들이">🌳 공원·식물원 나들이</option>
+                        <option value="박물관·전시관 체험">🏛️ 박물관·전시관 체험</option>
+                        <option value="영화관·공연 관람">🎬 영화관·공연 관람</option>
+                        <option value="요리·만들기 체험">🍕 요리·만들기 체험</option>
+                        <option value="신나는 현장체험학습">🚌 신나는 현장체험학습</option>
                     </select>
+                    <input type="text" id="placeName" class="place-input" placeholder="장소 직접입력(선택)" oninput="updateSheet()">
                     <input type="text" id="studentName" class="student-input" placeholder="이름 입력" oninput="updateSheet()">
+                    
                     <div class="level-tabs">
                         <button class="lvl-tab lvl-1 active" onclick="setStudentLevel(1)">🥇 1수준(문장)</button>
                         <button class="lvl-tab lvl-2" onclick="setStudentLevel(2)">🥈 2수준(어절)</button>
-                        <button class="lvl-tab lvl-3" onclick="setStudentLevel(3)">🥉 3수준(그림)</button>
+                        <button class="lvl-tab lvl-3" onclick="setStudentLevel(3)">🥉 3수준(그림 4개)</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Step 2: 사진 1장 고르기 -->
-            <div class="step-container">
+            <!-- 교사 설정 전용 Step 2 -->
+            <div class="step-container teacher-only-step">
                 <h2>
-                    <span>2. 이번 달 내 사진 1장 고르기</span>
-                    <label for="photoInput" class="upload-btn">📁 USB에서 사진 불러오기</label>
+                    <span>2. 체험학습 사진 & 색칠 도안 스타일</span>
+                    <label for="photoInput" class="upload-btn">📁 체험학습 사진 불러오기</label>
                     <input type="file" id="photoInput" multiple accept="image/*" style="display:none;" onchange="loadPhotos(event)">
                 </h2>
                 <div class="photo-thumbnails" id="thumbContainer">
-                    <span style="color:#999; font-size:15px;">위의 파란 버튼을 눌러 USB 속 사진들을 한 번에 불러오세요.</span>
+                    <span style="color:#999; font-size:15px;">위의 파란 버튼을 눌러 체험학습에서 찍은 사진들을 한 번에 불러오세요.</span>
                 </div>
                 <div class="coloring-controls">
-                    <button class="mode-btn active" onclick="setColorMode('sketch', this)">✏️ 윤곽선 도안</button>
-                    <button class="mode-btn" onclick="setColorMode('faint', this)">🌫️ 연한 흑백(덧칠용)</button>
-                    <button class="layout-btn" id="toggleRefBtn" onclick="toggleReferenceBox()">👀 원래 사진 숨기기(도안만 크게)</button>
+                    <button class="mode-btn active" onclick="setColorMode('pastel', this)">✨ 마법 밑색 도안(완성도UP!)</button>
+                    <button class="mode-btn" onclick="setColorMode('comic', this)">📕 굵은 만화선 도안</button>
+                    <button class="mode-btn" onclick="setColorMode('sketch', this)">✏️ 일반 윤곽선</button>
+                    <button class="frame-toggle-btn" id="frameBtn" onclick="togglePatternFrame()">⭐ 화면 여백무늬 끄기(인쇄시 자동켜짐)</button>
+                    <button class="layout-btn" id="toggleRefBtn" onclick="toggleReferenceBox()">👀 원래 사진 숨기기</button>
+                    
                     <div class="slider-wrap">
-                        <span>선 굵기:</span>
-                        <input type="range" id="edgeSlider" min="10" max="80" value="38" oninput="applyImageFilter()">
+                        <span>도안 선/밑색 진하기 조절:</span>
+                        <input type="range" id="edgeSlider" min="15" max="85" value="45" style="width:160px;" oninput="applyImageFilter()">
                     </div>
                 </div>
             </div>
 
-            <!-- Step 3: 무엇을 했나요? -->
-            <div class="step-container">
+            <!-- Step 3 (학생 활동 1): 체험학습에서 무엇을 했나요? -->
+            <div class="step-container active-task-1" id="stepBox1">
                 <h2>
-                    <span id="step3Title">3. 무엇을 했나요? (누르면 읽어줘요 🔊)</span>
+                    <span id="step3Title">👉 ① 체험학습에서 무엇을 했나요? (🔊)</span>
                 </h2>
                 <div class="btn-grid" id="group1Grid"></div>
             </div>
 
-            <!-- Step 4: 어떤 기분이 들었나요? -->
-            <div class="step-container">
+            <!-- Step 4 (학생 활동 2): 다녀온 기분이 어땠나요? -->
+            <div class="step-container waiting-step" id="stepBox2">
                 <h2>
-                    <span id="step4Title">4. 어떤 기분이 들었나요? (🔊)</span>
+                    <span id="step4Title">👉 ② 다녀온 기분이 어땠나요? (🔊)</span>
                 </h2>
                 <div class="btn-grid" id="group2Grid"></div>
 
-                <!-- 🥇 1수준 전용: 직접 키보드로 한 줄 더 쓰기 -->
                 <div id="lvl1-typing-box">
                     <div style="font-size:15px; font-weight:bold; color:#1971c2; margin-bottom:6px;">
-                        ⌨️ [1수준] 키보드로 내 생각 한 줄 직접 써 보기 (선택):
+                        ⌨️ [1수준] 가장 기억에 남는 것을 키보드로 직접 써 보기 (선택):
                     </div>
-                    <input type="text" id="lvl1CustomInput" class="lvl1-input" placeholder="예: 친구랑 김밥을 먹어서 정말 맛있었다." oninput="updateSheet()">
+                    <input type="text" id="lvl1CustomInput" class="lvl1-input" placeholder="예: 버스를 타고 친구와 간식을 먹은 것이 제일 재미있었다." oninput="updateSheet()">
                 </div>
             </div>
 
-            <!-- 🥈 2수준 전용: 어절(단어 덩어리) 단위로 터치하며 따라 말하기 -->
+            <!-- 🥈 2수준 전용: 어절 단위로 터치하며 따라 말하기 -->
             <div id="lvl2-eojeol-box">
                 <p class="eojeol-title">🗣️ [2수준] 말풍선을 순서대로 하나씩 누르며 따라 말해 보세요!</p>
                 <div id="eojeolContainer" style="display:flex; flex-direction:column; gap:10px; width:100%;">
-                    <span style="color:#888; font-size:15px; text-align:center;">위에서 그림 버튼을 고르면 따라 말하기 좋은 어절 말풍선이 나와요!</span>
+                    <span style="color:#888; font-size:16px; text-align:center;">위에서 그림 버튼을 고르면 따라 말하기 좋은 어절 말풍선이 나와요!</span>
                 </div>
                 <button class="speak-all-btn" onclick="speakCombinedShort()">🔊 문장 전체 이어서 듣기</button>
             </div>
@@ -786,16 +912,17 @@
 
         <!-- 오른쪽: 수준별로 자동 변환되는 A4 학습지 미리보기 -->
         <div class="right-panel">
+            <!-- 화면에서는 시각적 복잡함을 줄이기 위해 무늬 액자 기본 해제 (인쇄 시 자동 적용) -->
             <div id="album-sheet">
                 <div class="sheet-header">
-                    <h1 class="sheet-title" id="sheetTitle">🍁 10월의 빛나는 성장앨범</h1>
-                    <p class="sheet-subtitle" id="sheetSubtitle">왼쪽 사진을 보고 오른쪽 그림을 예쁘게 색칠한 뒤, 아래 글을 따라 써 보세요.</p>
+                    <h1 class="sheet-title" id="sheetTitle">🍁 가을 현장체험학습 추억앨범</h1>
+                    <p class="sheet-subtitle" id="sheetSubtitle">체험학습 사진을 보고 내 모습과 바깥 별·하트 무늬를 예쁘게 색칠해 보세요!</p>
                 </div>
 
-                <!-- 상단 공통: 왼쪽(원본 컬러) + 오른쪽(색칠 도안) -->
+                <!-- 상단 공통: 왼쪽(원본 컬러) + 오른쪽(고완성도 색칠 도안) -->
                 <div class="coloring-compare-area">
                     <div class="photo-box" id="refBox">
-                        <div class="box-label">👀 보고 색칠해요 (원래 사진)</div>
+                        <div class="box-label">👀 보고 색칠해요 (체험학습 사진)</div>
                         <div class="box-content">
                             <div id="refPlaceholder" class="canvas-placeholder">사진을 고르면<br>원래 사진이 나와요</div>
                             <img id="reference-img" alt="원래 사진">
@@ -803,7 +930,7 @@
                     </div>
 
                     <div class="photo-box sketch-box">
-                        <div class="box-label">🎨 여기에 색칠해요 (색칠 도안)</div>
+                        <div class="box-label">🎨 여기에 색칠해요 (내 모습 칠하기)</div>
                         <div class="box-content">
                             <div id="canvasPlaceholder" class="canvas-placeholder">사진을 고르면<br>색칠 도안이 나와요</div>
                             <canvas id="coloring-canvas"></canvas>
@@ -814,7 +941,7 @@
                 <!-- 🥇1수준 & 🥈2수준용: 덧쓰기 줄공책 -->
                 <div id="tracing-paper">
                     <div id="final-text" style="color:#ccc; font-size:21px; text-align:center; margin:auto 0;">
-                        왼쪽에서 그림 버튼을 고르면<br>수준에 맞는 따라 쓰기 글씨가 나타납니다 ✏️
+                        왼쪽에서 체험학습 그림 버튼을 고르면<br>수준에 맞는 따라 쓰기 글씨가 나타납니다 ✏️
                     </div>
                 </div>
 
@@ -823,11 +950,11 @@
                     <div class="lvl3-sticker-row">
                         <div class="lvl3-sticker-card" id="lvl3Card1">
                             <span class="lvl3-big-emoji">❔</span>
-                            <span class="lvl3-card-label" style="color:#aaa;">활동 그림 선택</span>
+                            <span class="lvl3-card-label" style="color:#aaa;">한 일 선택</span>
                         </div>
                         <div class="lvl3-sticker-card" id="lvl3Card2" style="background:#ebfbee;">
                             <span class="lvl3-big-emoji">❔</span>
-                            <span class="lvl3-card-label" style="color:#aaa;">기분 그림 선택</span>
+                            <span class="lvl3-card-label" style="color:#aaa;">내 기분 선택</span>
                         </div>
                     </div>
                     <div class="lvl3-name-box">
@@ -840,7 +967,7 @@
             </div>
 
             <div class="action-btns">
-                <button class="action-btn btn-save-img" onclick="saveAsImage()">💾 파일로 다운로드 (USB 저장용)</button>
+                <button class="action-btn btn-save-img" onclick="saveAsImage()">💾 이미지로 다운로드 (USB 저장용)</button>
                 <button class="action-btn btn-print-sheet" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
             </div>
         </div>
@@ -850,7 +977,7 @@
     <div class="modal-overlay" id="rosterModal">
         <div class="modal-card">
             <h2 style="margin-top:0; font-size:22px;">⚙️ 우리 반 6명 이름 및 수준 설정</h2>
-            <p style="font-size:15px; color:#666; margin-bottom:15px;">한 번 저장해 두면 다음 달에도 그대로 기억합니다.</p>
+            <p style="font-size:15px; color:#666; margin-bottom:15px;">한 번 저장해 두면 다음에도 그대로 기억합니다.</p>
             <div id="rosterEditList"></div>
             <div style="display:flex; gap:10px; margin-top:20px;">
                 <button class="action-btn btn-save-img" style="padding:10px;" onclick="saveRosterConfig()">✅ 저장하기</button>
@@ -871,33 +998,61 @@
         let classRoster = JSON.parse(localStorage.getItem('special_album_roster')) || defaultRoster;
         let currentStudentIdx = 0;
         let currentLevel = 1;
+        let isFocusMode = false;
 
-        // 수준별 선택지 데이터베이스
-        // 1수준(full): 완전한 문장 / 2수준(short): 3~4어절 문장 (띄어쓰기 기준으로 어절 말풍선 자동 생성) / 3수준(word): 핵심 단어
+        // 🚌 체험학습 사후활동 전용 데이터 (coreLvl3: true인 핵심 4개 항목만 3수준에 노출하여 시각적 혼란 방지)
         const optionsData = {
             group1: [
-                { emoji: "⛰️", full: "친구들과 신나게 체험학습을 다녀왔어요.", short: "친구들과 신나게 체험학습 갔어요", word: "체험학습" },
-                { emoji: "🎨", full: "교실에서 재미있게 만들고 공부했어요.", short: "교실에서 재미있게 만들기 했어요", word: "만들기 수업" },
-                { emoji: "🍎", full: "맛있는 간식을 먹고 즐거운 시간을 보냈어요.", short: "친구들과 맛있는 간식 먹었어요", word: "맛있는 간식" },
-                { emoji: "👫", full: "친구들과 사이좋게 몸을 움직이며 놀았어요.", short: "친구들과 사이좋게 같이 놀았어요", word: "친구와 놀이" }
+{ emoji: "🏺", full: "예쁜 매병을 보고 맑은 풍경을 만들었어요.", short: "예쁜 풍경 만들었어요", word: "매병 풍경", coreLvl3: true },
+        { emoji: "🙌", full: "선생님 설명을 들으며 재미있는 체험 활동을 했어요.", short: "재미있는 체험 활동 했어요", word: "재미있는 체험", coreLvl3: true },
             ],
             group2: [
-                { emoji: "😄", full: "정말 신나고 웃음이 가득했어요!", short: "오늘 정말 신나고 즐거웠어요!", word: "신나요" },
-                { emoji: "👍", full: "나 스스로 멋지게 해내서 뿌듯했어요!", short: "내가 스스로 해서 뿌듯해요!", word: "뿌듯해요" },
-                { emoji: "🥰", full: "마음이 따뜻하고 행복했어요!", short: "마음이 따뜻하고 참 행복해요!", word: "행복해요" },
-                { emoji: "💪", full: "다음 달에도 씩씩하게 참여할 거예요!", short: "다음에도 씩씩하게 또 할래요!", word: "최고예요" }
+                { emoji: "😄", full: "친구들과 함께여서 정말 신나고 즐거웠어요!", short: "오늘 정말 신나고 즐거웠어요!", word: "신나요" },
+                { emoji: "👍", full: "안전 약속과 질서를 잘 지켜서 참 뿌듯했어요!", short: "약속을 잘 지켜 뿌듯해요!", word: "뿌듯해요" },
+                { emoji: "🤩", full: "새로운 것을 직접 보고 배워서 정말 신기했어요!", short: "새로운 걸 봐서 신기해요!", word: "신기해요" },
+                { emoji: "🥰", full: "행복한 추억이 생겨서 다음에 또 가고 싶어요!", short: "행복해서 다음에 또 갈래요!", word: "또 갈래요" }
             ]
         };
 
         let selectedIdx1 = null;
         let selectedIdx2 = null;
         let currentImageObj = null;
-        let colorMode = 'sketch';
+        let colorMode = 'pastel';
         let showRefPhoto = true;
+        let hasPatternFrame = false; // 화면에서는 깔끔하게 기본 OFF (인쇄 시 자동 ON)
 
         function initApp() {
             renderRosterBar();
             selectStudentFromRoster(0);
+        }
+
+        // 🔒 학생 집중 모드 토글 (교사용 설정창 숨기기)
+        function toggleFocusMode() {
+            isFocusMode = !isFocusMode;
+            document.body.classList.toggle('focus-mode', isFocusMode);
+            updateStepHighlight();
+        }
+
+        // 단계별 하이라이트 업데이트 (① 한 일 선택 -> ② 기분 선택 순서 유도)
+        function updateStepHighlight() {
+            const box1 = document.getElementById('stepBox1');
+            const box2 = document.getElementById('stepBox2');
+            const g1 = document.getElementById('group1Grid');
+            const g2 = document.getElementById('group2Grid');
+
+            g1.classList.toggle('has-selection', selectedIdx1 !== null);
+            g2.classList.toggle('has-selection', selectedIdx2 !== null);
+
+            if (selectedIdx1 === null) {
+                box1.className = 'step-container active-task-1';
+                box2.className = 'step-container waiting-step';
+            } else if (selectedIdx2 === null) {
+                box1.className = 'step-container';
+                box2.className = 'step-container active-task-2';
+            } else {
+                box1.className = 'step-container';
+                box2.className = 'step-container';
+            }
         }
 
         function renderRosterBar() {
@@ -916,6 +1071,7 @@
             currentStudentIdx = idx;
             const st = classRoster[idx];
             document.getElementById('studentName').value = st.name;
+            document.getElementById('focusStudentName').innerText = st.name;
             selectedIdx1 = null;
             selectedIdx2 = null;
             document.getElementById('lvl1CustomInput').value = '';
@@ -925,16 +1081,18 @@
 
         function setStudentLevel(lvl) {
             currentLevel = lvl;
-            document.body.className = `mode-lvl-${lvl}`;
+            document.body.classList.remove('mode-lvl-1', 'mode-lvl-2', 'mode-lvl-3');
+            document.body.classList.add(`mode-lvl-${lvl}`);
+            if (isFocusMode) document.body.classList.add('focus-mode');
 
             document.querySelectorAll('.lvl-tab').forEach((tab, i) => {
                 tab.classList.toggle('active', i + 1 === lvl);
             });
 
             const descMap = {
-                1: "🥇 1수준: 문장 따라 쓰기 및 키보드 직접 입력",
+                1: "🥇 1수준: 체험학습 문장 따라 쓰기 및 직접 입력",
                 2: "🥈 2수준: 어절 단위로 끊어 따라 말하기 & 따라 쓰기",
-                3: "🥉 3수준: 큰 그림 터치 선택 & 내 이름 크게 색칠하기"
+                3: "🥉 3수준: 핵심 4개 큰 그림 터치 & 내 이름 색칠하기"
             };
             document.getElementById('levelDescText').innerText = descMap[lvl];
 
@@ -947,16 +1105,19 @@
             if (lvl === 3) {
                 tracingPaper.style.display = 'none';
                 lvl3Area.style.display = 'flex';
-                document.getElementById('sheetSubtitle').innerText = "왼쪽 사진을 보고 예쁘게 색칠한 뒤, 내 이름을 색칠해 보세요.";
+                // 3수준에서 숨겨진 5, 6번 항목이 선택되어 있었다면 초기화
+                if (selectedIdx1 !== null && !optionsData.group1[selectedIdx1].coreLvl3) {
+                    selectedIdx1 = null;
+                }
             } else {
                 tracingPaper.style.display = 'flex';
                 lvl3Area.style.display = 'none';
                 tracingPaper.classList.toggle('lvl2-paper', lvl === 2);
-                document.getElementById('sheetSubtitle').innerText = "왼쪽 사진을 보고 오른쪽 그림을 예쁘게 색칠한 뒤, 아래 글을 따라 써 보세요.";
             }
 
             renderChoiceButtons();
             renderEojeolChips();
+            updateStepHighlight();
             updateSheet();
         }
 
@@ -967,6 +1128,9 @@
             g2.innerHTML = '';
 
             optionsData.group1.forEach((item, idx) => {
+                // 🥉 3수준일 때는 가장 핵심적인 4개(2x2)만 노출하여 시각적 과부하 방지
+                if (currentLevel === 3 && !item.coreLvl3) return;
+
                 const label = (currentLevel === 1) ? item.full : (currentLevel === 2 ? item.short : item.word);
                 const btn = document.createElement('button');
                 btn.className = 'word-btn group1' + (selectedIdx1 === idx ? ' active' : '');
@@ -994,22 +1158,21 @@
             
             speakText(speakTarget, currentLevel === 2 ? 0.9 : 0.95);
             renderChoiceButtons();
+            updateStepHighlight();
             if (currentLevel === 2) renderEojeolChips();
             updateSheet();
         }
 
-        // 🥈 2수준 핵심 기능: 문장을 띄어쓰기(어절) 단위로 쪼개어 말풍선 버튼으로 생성
         function renderEojeolChips() {
             if (currentLevel !== 2) return;
             const container = document.getElementById('eojeolContainer');
             container.innerHTML = '';
 
             if (selectedIdx1 === null && selectedIdx2 === null) {
-                container.innerHTML = '<span style="color:#888; font-size:15px; text-align:center;">위에서 그림 버튼을 고르면 따라 말하기 좋은 어절 말풍선이 나와요!</span>';
+                container.innerHTML = '<span style="color:#888; font-size:16px; text-align:center;">위에서 그림 버튼을 고르면 따라 말하기 좋은 어절 말풍선이 나와요!</span>';
                 return;
             }
 
-            // 어절 말풍선 줄 생성 헬퍼 함수
             function createEojeolRow(emoji, sentence) {
                 const row = document.createElement('div');
                 row.className = 'eojeol-row';
@@ -1021,11 +1184,10 @@
                     chip.innerHTML = (idx === 0 ? `<span>${emoji}</span> ` : '') + `<span>${word}</span>`;
                     chip.onclick = () => {
                         chip.classList.add('spoken');
-                        speakText(word, 0.88); // 어절 단위로 명확하게 읽어줌
+                        speakText(word, 0.88);
                     };
                     row.appendChild(chip);
 
-                    // 어절 사이에 화살표 표시
                     if (idx < words.length - 1) {
                         const arrow = document.createElement('span');
                         arrow.className = 'eojeol-arrow';
@@ -1064,15 +1226,19 @@
         }
 
         function updateSheet() {
-            const monthSelect = document.getElementById('monthSelect');
-            const monthText = monthSelect.options[monthSelect.selectedIndex].text;
+            const tripSelect = document.getElementById('tripSelect');
+            const tripText = tripSelect.options[tripSelect.selectedIndex].text;
+            const customPlace = document.getElementById('placeName').value.trim();
             const studentName = document.getElementById('studentName').value.trim();
 
-            document.getElementById('sheetTitle').innerText = studentName
-                ? `${monthText}, ${studentName}의 성장앨범`
-                : `${monthText}의 빛나는 성장앨범`;
+            document.getElementById('focusStudentName').innerText = studentName || '학생';
 
-            // 🥉 3수준 학습지 업데이트
+            const titleTopic = customPlace ? `🚌 ${customPlace} 체험학습` : tripText;
+
+            document.getElementById('sheetTitle').innerText = studentName
+                ? `${titleTopic} (${studentName})`
+                : `${titleTopic} 추억앨범`;
+
             if (currentLevel === 3) {
                 const c1 = document.getElementById('lvl3Card1');
                 const c2 = document.getElementById('lvl3Card2');
@@ -1081,21 +1247,20 @@
                     const it1 = optionsData.group1[selectedIdx1];
                     c1.innerHTML = `<span class="lvl3-big-emoji">${it1.emoji}</span><span class="lvl3-card-label">${it1.word}</span>`;
                 } else {
-                    c1.innerHTML = `<span class="lvl3-big-emoji">❔</span><span class="lvl3-card-label" style="color:#aaa;">활동 그림</span>`;
+                    c1.innerHTML = `<span class="lvl3-big-emoji">❔</span><span class="lvl3-card-label" style="color:#aaa;">한 일 선택</span>`;
                 }
 
                 if (selectedIdx2 !== null) {
                     const it2 = optionsData.group2[selectedIdx2];
                     c2.innerHTML = `<span class="lvl3-big-emoji">${it2.emoji}</span><span class="lvl3-card-label">${it2.word}</span>`;
                 } else {
-                    c2.innerHTML = `<span class="lvl3-big-emoji">❔</span><span class="lvl3-card-label" style="color:#aaa;">기분 그림</span>`;
+                    c2.innerHTML = `<span class="lvl3-big-emoji">❔</span><span class="lvl3-card-label" style="color:#aaa;">내 기분 선택</span>`;
                 }
 
                 document.getElementById('lvl3GiantName').innerText = studentName || "내이름";
                 return;
             }
 
-            // 🥇 1수준 & 🥈 2수준 줄공책 업데이트
             const finalTextDiv = document.getElementById('final-text');
             const customLine = document.getElementById('lvl1CustomInput').value.trim();
 
@@ -1103,7 +1268,7 @@
                 finalTextDiv.style.color = "#ccc";
                 finalTextDiv.style.fontSize = "21px";
                 finalTextDiv.style.textAlign = "center";
-                finalTextDiv.innerHTML = "왼쪽에서 그림 버튼을 고르면<br>수준에 맞는 따라 쓰기 글씨가 나타납니다 ✏️";
+                finalTextDiv.innerHTML = "왼쪽에서 체험학습 그림 버튼을 고르면<br>수준에 맞는 따라 쓰기 글씨가 나타납니다 ✏️";
                 return;
             }
 
@@ -1117,7 +1282,6 @@
                 if (selectedIdx2 !== null) html += `${optionsData.group2[selectedIdx2].emoji} ${optionsData.group2[selectedIdx2].full}<br>`;
                 if (customLine) html += `✏️ ${customLine}<br>`;
             } else if (currentLevel === 2) {
-                // 2수준: 자신이 어절 단위로 따라 말한 문장을 큼직하게 따라 쓰기
                 if (selectedIdx1 !== null) html += `${optionsData.group1[selectedIdx1].emoji} ${optionsData.group1[selectedIdx1].short}<br>`;
                 if (selectedIdx2 !== null) html += `${optionsData.group2[selectedIdx2].emoji} ${optionsData.group2[selectedIdx2].short}<br>`;
             }
@@ -1166,12 +1330,21 @@
             img.src = url;
         }
 
+        function togglePatternFrame() {
+            hasPatternFrame = !hasPatternFrame;
+            const sheet = document.getElementById('album-sheet');
+            const btn = document.getElementById('frameBtn');
+            sheet.classList.toggle('with-pattern-frame', hasPatternFrame);
+            btn.classList.toggle('active', hasPatternFrame);
+            btn.innerText = hasPatternFrame ? '⭐ 화면 여백무늬 켜짐' : '⭐ 화면 여백무늬 끄기(인쇄시 자동켜짐)';
+        }
+
         function toggleReferenceBox() {
             showRefPhoto = !showRefPhoto;
             document.getElementById('refBox').style.display = showRefPhoto ? 'flex' : 'none';
             document.getElementById('toggleRefBtn').innerText = showRefPhoto
-                ? '👀 원래 사진 숨기기(도안만 크게)'
-                : '👀 원래 사진 같이 보기(나란히)';
+                ? '👀 원래 사진 숨기기'
+                : '👀 원래 사진 같이 보기';
         }
 
         function setColorMode(mode, btnElem) {
@@ -1204,24 +1377,15 @@
                 gray[i >> 2] = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
             }
 
-            if (colorMode === 'faint') {
-                const fadeFactor = (100 - sliderVal) / 100;
-                for (let i = 0; i < data.length; i += 4) {
-                    const g = gray[i >> 2];
-                    const lightGray = Math.min(255, g + (255 - g) * fadeFactor);
-                    data[i] = data[i + 1] = data[i + 2] = lightGray;
-                }
-                ctx.putImageData(imgData, 0, 0);
-                return;
-            }
-
             const outData = ctx.createImageData(w, h);
             const out = outData.data;
-            const sensitivity = sliderVal / 25;
+            const sensitivity = sliderVal / 22;
 
             for (let y = 1; y < h - 1; y++) {
                 for (let x = 1; x < w - 1; x++) {
                     const idx = y * w + x;
+                    const pIdx = idx * 4;
+
                     const gx =
                         -1 * gray[idx - w - 1] + 1 * gray[idx - w + 1] +
                         -2 * gray[idx - 1]     + 2 * gray[idx + 1] +
@@ -1231,28 +1395,64 @@
                          1 * gray[idx + w - 1] + 2 * gray[idx + w] + 1 * gray[idx + w + 1];
 
                     let edge = Math.sqrt(gx * gx + gy * gy) * sensitivity;
-                    let pixelVal = 255 - edge;
-                    if (pixelVal > 225) pixelVal = 255;
-                    if (pixelVal < 30) pixelVal = 30;
 
-                    const pIdx = idx * 4;
-                    out[pIdx] = out[pIdx + 1] = out[pIdx + 2] = pixelVal;
-                    out[pIdx + 3] = 255;
+                    if (colorMode === 'pastel') {
+                        const tintRatio = 0.26;
+                        let r = 255 * (1 - tintRatio) + data[pIdx] * tintRatio;
+                        let g = 255 * (1 - tintRatio) + data[pIdx + 1] * tintRatio;
+                        let b = 255 * (1 - tintRatio) + data[pIdx + 2] * tintRatio;
+
+                        if (edge > 35) {
+                            const lineDarkness = Math.max(0.15, 1 - (edge / 180));
+                            r *= lineDarkness;
+                            g *= lineDarkness;
+                            b *= lineDarkness;
+                        }
+                        out[pIdx] = r;
+                        out[pIdx + 1] = g;
+                        out[pIdx + 2] = b;
+                        out[pIdx + 3] = 255;
+
+                    } else if (colorMode === 'comic') {
+                        let gVal = gray[idx];
+                        let val = 255;
+                        if (edge > 45 || gVal < 55) {
+                            val = 25;
+                        } else if (gVal < 110) {
+                            val = 215;
+                        }
+                        out[pIdx] = out[pIdx + 1] = out[pIdx + 2] = val;
+                        out[pIdx + 3] = 255;
+
+                    } else {
+                        let pixelVal = 255 - edge;
+                        if (pixelVal > 225) pixelVal = 255;
+                        if (pixelVal < 30) pixelVal = 30;
+                        out[pIdx] = out[pIdx + 1] = out[pIdx + 2] = pixelVal;
+                        out[pIdx + 3] = 255;
+                    }
                 }
             }
             ctx.putImageData(outData, 0, 0);
         }
 
         async function saveAsImage() {
-            const monthVal = document.getElementById('monthSelect').value;
+            const customPlace = document.getElementById('placeName').value.trim();
+            const tripVal = customPlace || document.getElementById('tripSelect').value;
             const studentName = document.getElementById('studentName').value.trim() || '학생';
             const sheet = document.getElementById('album-sheet');
 
+            // 이미지 저장 시 자동으로 여백 색칠 무늬 적용 후 캡처
+            const wasPatternOn = sheet.classList.contains('with-pattern-frame');
+            sheet.classList.add('with-pattern-frame');
+
             const canvas = await html2canvas(sheet, { scale: 2, backgroundColor: '#ffffff' });
             const link = document.createElement('a');
-            link.download = `${monthVal}_${studentName}_${currentLevel}수준_성장앨범.png`;
+            link.download = `${tripVal}_${studentName}_${currentLevel}수준_추억앨범.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
+
+            if (!wasPatternOn) sheet.classList.remove('with-pattern-frame');
         }
 
         function openRosterModal() {
@@ -1267,7 +1467,7 @@
                     <select id="editLvl_${i}">
                         <option value="1" ${st.level === 1 ? 'selected' : ''}>🥇 1수준 (문장·타이핑)</option>
                         <option value="2" ${st.level === 2 ? 'selected' : ''}>🥈 2수준 (어절 모방)</option>
-                        <option value="3" ${st.level === 3 ? 'selected' : ''}>🥉 3수준 (그림·이름색칠)</option>
+                        <option value="3" ${st.level === 3 ? 'selected' : ''}>🥉 3수준 (그림 4개·이름색칠)</option>
                     </select>
                 `;
                 list.appendChild(row);
@@ -1290,10 +1490,14 @@
             selectStudentFromRoster(currentStudentIdx);
         }
 
+        // 블루투스 키보드 단축키 (Alt+1~6: 학생 전환 / Alt+F: 학생 집중 모드 전환)
         window.addEventListener('keydown', function(e) {
             if (e.altKey && e.key >= '1' && e.key <= '6') {
                 e.preventDefault();
                 selectStudentFromRoster(parseInt(e.key) - 1);
+            } else if (e.altKey && (e.key === 'f' || e.key === 'F' || e.key === 'ㄹ')) {
+                e.preventDefault();
+                toggleFocusMode();
             }
         });
 
